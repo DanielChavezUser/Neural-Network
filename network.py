@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Created on Tue Jun  4 12:59:34 2024
 
@@ -18,6 +17,8 @@ and omits many desirable features.
 #### Libraries
 # Standard library
 import random
+import mnist_loader1
+
 
 # Third-party libraries
 import numpy as np
@@ -47,6 +48,7 @@ class Network(object):
         epoch, and partial progress printed out.  This is useful for
         tracking progress, but slows things down substantially."""
         n_test = 0
+        testVal = 0
         if test_data: n_test = len(test_data)
         n = len(training_data)
         for j in range(epochs):
@@ -57,7 +59,8 @@ class Network(object):
             for mini_batch in mini_batches:
                 self.update_mini_batch(mini_batch, eta)
             if test_data:
-                print("Epoch {0}: {1} / {2}".format(j, self.evaluate(test_data), n_test))
+                testVal += 1
+                print("Epoch {0}: {1} / {2}".format(j, self.evaluate(test_data,testVal), n_test))
             else:
                 print("Epoch {0} complete".format(j))
 
@@ -112,13 +115,19 @@ class Network(object):
             nabla_w[-l] = np.dot(delta, activations[-l-1].transpose())
         return (nabla_b, nabla_w)
 
-    def evaluate(self, test_data):
+    def evaluate(self, test_data, testVal):
         """Return the number of test inputs for which the neural
         network outputs the correct result. Note that the neural
         network's output is assumed to be the index of whichever
         neuron in the final layer has the highest activation."""
         test_results = [(np.argmax(self.feedforward(x)), np.argmax(y))
                         for (x, y) in test_data]
+        if testVal == 30:
+            for (x, y) in test_data:
+                if np.argmax(self.feedforward(x)) != np.argmax(y):
+                    mnist_loader1.plot_digit_testing(x, np.argmax(self.feedforward(x)))
+               
+                
         return sum(int(x == y) for (x, y) in test_results)
 
     def cost_derivative(self, output_activations, y):
